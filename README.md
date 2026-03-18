@@ -90,7 +90,11 @@ Install from [cli.github.com](https://cli.github.com/), then run:
 gh auth login
 ```
 
-Follow the prompts to log in with your browser.
+When prompted, pick these options:
+- **Where do you use GitHub?** → GitHub.com
+- **Preferred protocol?** → HTTPS
+- **Authenticate Git with GitHub?** → Yes
+- **How to authenticate?** → Login with a web browser
 
 ### 5. VS Code extensions
 

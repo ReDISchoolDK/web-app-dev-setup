@@ -149,7 +149,12 @@ if (Test-Command "gh") {
         Write-Host "========================================" -ForegroundColor White
         Write-Host ""
         Write-Host "Let's log you into GitHub."
-        Write-Host "Follow the prompts — it will open your browser."
+        Write-Host "You'll be asked a few questions — pick these options:"
+        Write-Host ""
+        Write-Host "  - Where do you use GitHub?       -> GitHub.com"
+        Write-Host "  - Preferred protocol?             -> HTTPS"
+        Write-Host "  - Authenticate Git with GitHub?   -> Yes"
+        Write-Host "  - How to authenticate?            -> Login with a web browser"
         Write-Host ""
         gh auth login
     } else {

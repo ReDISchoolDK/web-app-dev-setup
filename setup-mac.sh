@@ -167,7 +167,12 @@ if ! gh auth status &>/dev/null; then
   echo "========================================"
   echo ""
   echo "Let's log you into GitHub."
-  echo "Follow the prompts — it will open your browser."
+  echo "You'll be asked a few questions — pick these options:"
+  echo ""
+  echo "  • Where do you use GitHub?       → GitHub.com"
+  echo "  • Preferred protocol?             → HTTPS"
+  echo "  • Authenticate Git with GitHub?   → Yes"
+  echo "  • How to authenticate?            → Login with a web browser"
   echo ""
   gh auth login
 else
