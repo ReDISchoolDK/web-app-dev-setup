@@ -274,13 +274,21 @@ echo ""
 read -rp "  Enter your full name: " STUDENT_NAME
 
 # Fetch the GitHub username and numeric user ID from the CLI.
-# This requires the gh auth step above to have succeeded.
+# If the API call fails (e.g. bad credentials), re-run login
+# and try again instead of making the student restart.
 GITHUB_USERNAME=$(gh api user --jq '.login') || true
 GITHUB_USER_ID=$(gh api user --jq '.id') || true
 
 if [[ -z "$GITHUB_USERNAME" || -z "$GITHUB_USER_ID" ]]; then
-  red "Could not fetch your GitHub info. Are you logged in?"
-  echo "  Run: gh auth login"
+  yellow "GitHub session expired or invalid — let's log in again."
+  gh auth login
+  GITHUB_USERNAME=$(gh api user --jq '.login') || true
+  GITHUB_USER_ID=$(gh api user --jq '.id') || true
+fi
+
+if [[ -z "$GITHUB_USERNAME" || -z "$GITHUB_USER_ID" ]]; then
+  red "Still could not fetch your GitHub info."
+  echo "  Try running this setup script again."
   exit 1
 fi
 

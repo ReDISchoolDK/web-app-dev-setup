@@ -246,7 +246,8 @@ if ((Test-Command "git") -and (Test-Command "gh")) {
     $studentName = Read-Host "  Enter your full name"
 
     # Fetch the GitHub username and numeric user ID from the CLI.
-    # This requires the gh auth step above to have succeeded.
+    # If the API call fails (e.g. bad credentials), re-run login
+    # and try again instead of making the student restart.
     # We temporarily allow errors because gh writes to stderr on
     # failure, and PowerShell's "Stop" mode treats that as fatal.
     try {
@@ -258,9 +259,20 @@ if ((Test-Command "git") -and (Test-Command "gh")) {
     }
 
     if (-not $githubUsername -or -not $githubUserId) {
-        Write-Fail "Could not fetch your GitHub info. Are you logged in?"
-        Write-Host "  Run: gh auth login"
-        Write-Host "  Then re-run this setup script."
+        Write-Info "GitHub session expired or invalid — let's log in again."
+        gh auth login
+        try {
+            $ErrorActionPreference = "Continue"
+            $githubUsername = gh api user --jq '.login' 2>$null
+            $githubUserId   = gh api user --jq '.id' 2>$null
+        } finally {
+            $ErrorActionPreference = "Stop"
+        }
+    }
+
+    if (-not $githubUsername -or -not $githubUserId) {
+        Write-Fail "Still could not fetch your GitHub info."
+        Write-Host "  Try running this setup script again."
         exit 1
     }
 
