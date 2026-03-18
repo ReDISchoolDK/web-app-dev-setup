@@ -30,7 +30,7 @@ Open a terminal and paste the command for your operating system.
 Open **Terminal** and run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ReDISchoolDK/web-app-dev-setup/main/setup-mac.sh -o /tmp/setup.sh && bash /tmp/setup.sh
+curl -fsSL "https://raw.githubusercontent.com/ReDISchoolDK/web-app-dev-setup/main/setup-mac.sh?$(date +%s)" -o /tmp/setup.sh && bash /tmp/setup.sh
 ```
 
 ### Windows
@@ -38,7 +38,7 @@ curl -fsSL https://raw.githubusercontent.com/ReDISchoolDK/web-app-dev-setup/main
 Open **PowerShell** and run:
 
 ```powershell
-irm https://raw.githubusercontent.com/ReDISchoolDK/web-app-dev-setup/main/setup-windows.ps1 | iex
+irm "https://raw.githubusercontent.com/ReDISchoolDK/web-app-dev-setup/main/setup-windows.ps1?$(Get-Random)" | iex
 ```
 
 The script will install everything you need:
