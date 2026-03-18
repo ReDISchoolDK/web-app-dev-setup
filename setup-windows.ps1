@@ -247,12 +247,20 @@ if ((Test-Command "git") -and (Test-Command "gh")) {
 
     # Fetch the GitHub username and numeric user ID from the CLI.
     # This requires the gh auth step above to have succeeded.
-    $githubUsername = gh api user --jq '.login' 2>$null
-    $githubUserId   = gh api user --jq '.id' 2>$null
+    # We temporarily allow errors because gh writes to stderr on
+    # failure, and PowerShell's "Stop" mode treats that as fatal.
+    try {
+        $ErrorActionPreference = "Continue"
+        $githubUsername = gh api user --jq '.login' 2>$null
+        $githubUserId   = gh api user --jq '.id' 2>$null
+    } finally {
+        $ErrorActionPreference = "Stop"
+    }
 
     if (-not $githubUsername -or -not $githubUserId) {
         Write-Fail "Could not fetch your GitHub info. Are you logged in?"
         Write-Host "  Run: gh auth login"
+        Write-Host "  Then re-run this setup script."
         exit 1
     }
 
