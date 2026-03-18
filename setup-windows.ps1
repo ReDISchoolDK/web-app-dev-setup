@@ -248,25 +248,31 @@ if ((Test-Command "git") -and (Test-Command "gh")) {
     # Fetch the GitHub username and numeric user ID from the CLI.
     # If the API call fails (e.g. bad credentials), re-run login
     # and try again instead of making the student restart.
-    # We temporarily allow errors because gh writes to stderr on
-    # failure, and PowerShell's "Stop" mode treats that as fatal.
+    # PowerShell treats native-command stderr as a terminating error
+    # when ErrorActionPreference is "Stop", so we use try/catch.
     try {
-        $ErrorActionPreference = "Continue"
         $githubUsername = gh api user --jq '.login' 2>$null
-        $githubUserId   = gh api user --jq '.id' 2>$null
-    } finally {
-        $ErrorActionPreference = "Stop"
+    } catch {
+        $githubUsername = $null
+    }
+    try {
+        $githubUserId = gh api user --jq '.id' 2>$null
+    } catch {
+        $githubUserId = $null
     }
 
     if (-not $githubUsername -or -not $githubUserId) {
         Write-Info "GitHub session expired or invalid — let's log in again."
         gh auth login
         try {
-            $ErrorActionPreference = "Continue"
             $githubUsername = gh api user --jq '.login' 2>$null
-            $githubUserId   = gh api user --jq '.id' 2>$null
-        } finally {
-            $ErrorActionPreference = "Stop"
+        } catch {
+            $githubUsername = $null
+        }
+        try {
+            $githubUserId = gh api user --jq '.id' 2>$null
+        } catch {
+            $githubUserId = $null
         }
     }
 
