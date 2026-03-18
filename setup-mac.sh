@@ -49,25 +49,37 @@ else
   exit 1
 fi
 
+# ── 0. Ensure Homebrew (macOS only) ───────────────────────────
+# All macOS installs use Homebrew, so we set it up first.
+# Running the installer on an existing but broken/outdated
+# Homebrew will repair and update it.
+if [[ "$PLATFORM" == "mac" ]]; then
+  echo "Checking Homebrew..."
+  if brew --version &>/dev/null; then
+    green "Homebrew"
+  else
+    yellow "Installing Homebrew (macOS package manager)..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    if [[ -x /opt/homebrew/bin/brew ]]; then
+      eval "$(/opt/homebrew/bin/brew shellenv)"   # Apple Silicon
+    else
+      eval "$(/usr/local/bin/brew shellenv)"       # Intel
+    fi
+    green "Homebrew"
+  fi
+  echo ""
+fi
+
 # ── 1. Install Git ───────────────────────────────────────────
+# On macOS, "git" exists as an Xcode shim even when Git isn't
+# installed, so we check git --version instead of command -v.
 echo "Checking Git..."
-if command -v git &>/dev/null; then
+if git --version &>/dev/null; then
   green "Git $(git --version | awk '{print $3}')"
 else
   yellow "Installing Git..."
 
   if [[ "$PLATFORM" == "mac" ]]; then
-    # On macOS we install Git via Homebrew. This also ensures Homebrew
-    # is available for later steps (gh, VS Code).
-    if ! command -v brew &>/dev/null; then
-      yellow "Installing Homebrew first (macOS package manager)..."
-      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-      if [[ -x /opt/homebrew/bin/brew ]]; then
-        eval "$(/opt/homebrew/bin/brew shellenv)"   # Apple Silicon
-      else
-        eval "$(/usr/local/bin/brew shellenv)"       # Intel
-      fi
-    fi
     brew install git
   else
     sudo apt-get update -qq
@@ -104,8 +116,10 @@ fi
 # Support) release via Volta so the version is stable and managed
 # automatically.
 echo ""
+# Volta places a "node" shim in PATH even before any version is
+# installed, so we check node --version instead of command -v.
 echo "Checking Node.js..."
-if command -v node &>/dev/null; then
+if node --version &>/dev/null; then
   green "Node.js $(node --version)"
 else
   yellow "Installing Node.js LTS via Volta..."
@@ -128,17 +142,6 @@ else
   yellow "Installing GitHub CLI..."
 
   if [[ "$PLATFORM" == "mac" ]]; then
-    # On macOS we use Homebrew. If it's not installed, we install it first.
-    if ! command -v brew &>/dev/null; then
-      yellow "Installing Homebrew first (macOS package manager)..."
-      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-      # Make brew available in this script right now.
-      if [[ -x /opt/homebrew/bin/brew ]]; then
-        eval "$(/opt/homebrew/bin/brew shellenv)"   # Apple Silicon
-      else
-        eval "$(/usr/local/bin/brew shellenv)"       # Intel
-      fi
-    fi
     brew install gh
   else
     # On Linux we add GitHub's official package repository and install via apt.
@@ -181,16 +184,6 @@ else
   yellow "Installing VS Code..."
 
   if [[ "$PLATFORM" == "mac" ]]; then
-    # On macOS we use Homebrew casks for GUI apps.
-    if ! command -v brew &>/dev/null; then
-      yellow "Installing Homebrew first (macOS package manager)..."
-      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-      if [[ -x /opt/homebrew/bin/brew ]]; then
-        eval "$(/opt/homebrew/bin/brew shellenv)"   # Apple Silicon
-      else
-        eval "$(/usr/local/bin/brew shellenv)"       # Intel
-      fi
-    fi
     brew install --cask visual-studio-code
   else
     # On Linux (Debian/Ubuntu) we add Microsoft's official apt repository.
