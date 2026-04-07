@@ -44,7 +44,7 @@ irm "https://raw.githubusercontent.com/ReDISchoolDK/web-app-dev-setup/main/setup
 The script will install everything you need:
 - Git (if not already installed)
 - VS Code
-- Volta and Node.js (LTS)
+- Volta, Node.js (LTS), and pnpm
 - GitHub CLI (and log you in)
 - VS Code extensions (ESLint, Prettier, Tailwind, Copilot)
 - Configure Git so your email stays private
@@ -74,12 +74,13 @@ If the setup script fails or you're on an unsupported system, install everything
 
 Download from [code.visualstudio.com](https://code.visualstudio.com/)
 
-### 3. Volta and Node.js
+### 3. Volta, Node.js, and pnpm
 
 1. Install Volta from [volta.sh](https://volta.sh/)
 2. Then open a terminal and run:
    ```
    volta install node@lts
+   volta install pnpm
    ```
 
 ### 4. GitHub CLI
