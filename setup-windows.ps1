@@ -6,9 +6,10 @@
 #   1. Git
 #   2. Volta — a Node.js version manager
 #   3. Node.js (LTS) — the JavaScript runtime
-#   4. GitHub CLI (gh) — for working with GitHub from the terminal
-#   5. VS Code — code editor
-#   6. VS Code extensions — linting, formatting, Tailwind, Copilot
+#   4. pnpm — fast, disk-efficient package manager
+#   5. GitHub CLI (gh) — for working with GitHub from the terminal
+#   6. VS Code — code editor
+#   7. VS Code extensions — linting, formatting, Tailwind, Copilot
 #
 # It also configures Git so your personal email stays private.
 #
@@ -114,7 +115,22 @@ if (Test-Command "node") {
     Write-Info "Skipping Node.js — needs Volta (will be set up on re-run)."
 }
 
-# ── 4. Install GitHub CLI ────────────────────────────────────
+# ── 4. Install pnpm ─────────────────────────────────────────
+# pnpm is a fast, disk-efficient package manager. We install it
+# via Volta so the version stays in sync across the team.
+Write-Host ""
+Write-Host "Checking pnpm..." -ForegroundColor White
+if (Test-Command "pnpm") {
+    Write-Ok "pnpm $(pnpm --version)"
+} elseif (Test-Command "volta") {
+    Write-Info "Installing pnpm via Volta..."
+    volta install pnpm
+    Write-Ok "pnpm $(pnpm --version)"
+} else {
+    Write-Info "Skipping pnpm — needs Volta (will be set up on re-run)."
+}
+
+# ── 5. Install GitHub CLI ────────────────────────────────────
 # The GitHub CLI lets you log into GitHub from the terminal,
 # which also sets up Git credentials for pushing code.
 # We install and authenticate here, before configuring email,
@@ -137,7 +153,7 @@ if (Test-Command "gh") {
     }
 }
 
-# ── 5. GitHub authentication ─────────────────────────────────
+# ── 6. GitHub authentication ─────────────────────────────────
 # Log in if we aren't already. We do this before setting up email
 # so we can call the API to get the correct noreply address.
 Write-Host ""
@@ -164,7 +180,7 @@ if (Test-Command "gh") {
     Write-Info "Skipping GitHub login — needs GitHub CLI (will be set up on re-run)."
 }
 
-# ── 6. Check VS Code ─────────────────────────────────────────
+# ── 7. Check VS Code ─────────────────────────────────────────
 # VS Code is the code editor we use in this course.
 Write-Host ""
 Write-Host "Checking VS Code..." -ForegroundColor White
@@ -183,7 +199,7 @@ if (Test-Command "code") {
     }
 }
 
-# ── 7. VS Code extensions ────────────────────────────────────
+# ── 8. VS Code extensions ────────────────────────────────────
 # These extensions help with code quality and productivity.
 Write-Host ""
 Write-Host "Installing VS Code extensions..." -ForegroundColor White
@@ -223,7 +239,7 @@ if (Test-Command "code") {
     Write-Fail "VS Code not found — install it, then re-run this script."
 }
 
-# ── 8. Configure Git email privacy ───────────────────────────
+# ── 9. Configure Git email privacy ───────────────────────────
 # GitHub provides a private noreply email address for each account.
 # For accounts created after July 2017 (almost everyone) it has the
 # form:  ID+USERNAME@users.noreply.github.com
@@ -310,6 +326,7 @@ Write-Host ""
 if (Test-Command "git")   { Write-Ok "Git" }        else { Write-Fail "Git" }
 if (Test-Command "volta") { Write-Ok "Volta" }      else { Write-Fail "Volta" }
 if (Test-Command "node")  { Write-Ok "Node.js" }    else { Write-Fail "Node.js" }
+if (Test-Command "pnpm")  { Write-Ok "pnpm" }       else { Write-Fail "pnpm" }
 if (Test-Command "gh")    { Write-Ok "GitHub CLI" } else { Write-Fail "GitHub CLI" }
 if (Test-Command "code")  { Write-Ok "VS Code" }    else { Write-Fail "VS Code" }
 

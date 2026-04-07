@@ -8,9 +8,10 @@
 #   1. Git
 #   2. Volta — a Node.js version manager
 #   3. Node.js (LTS) — the JavaScript runtime
-#   4. GitHub CLI (gh) — for working with GitHub from the terminal
-#   5. VS Code — code editor
-#   6. VS Code extensions — linting, formatting, Tailwind, Copilot
+#   4. pnpm — fast, disk-efficient package manager
+#   5. GitHub CLI (gh) — for working with GitHub from the terminal
+#   6. VS Code — code editor
+#   7. VS Code extensions — linting, formatting, Tailwind, Copilot
 #
 # It also configures Git so your personal email stays private.
 #
@@ -127,7 +128,20 @@ else
   green "Node.js $(node --version)"
 fi
 
-# ── 4. Install GitHub CLI ────────────────────────────────────
+# ── 4. Install pnpm ─────────────────────────────────────────
+# pnpm is a fast, disk-efficient package manager. We install it
+# via Volta so the version stays in sync across the team.
+echo ""
+echo "Checking pnpm..."
+if command -v pnpm &>/dev/null; then
+  green "pnpm $(pnpm --version)"
+else
+  yellow "Installing pnpm via Volta..."
+  volta install pnpm
+  green "pnpm $(pnpm --version)"
+fi
+
+# ── 5. Install GitHub CLI ────────────────────────────────────
 # The GitHub CLI lets you log into GitHub from the terminal,
 # which also sets up Git credentials for pushing code.
 # We install and authenticate here, before configuring email,
@@ -157,7 +171,7 @@ else
   green "GitHub CLI $(gh --version | head -1 | awk '{print $3}')"
 fi
 
-# ── 5. GitHub authentication ─────────────────────────────────
+# ── 6. GitHub authentication ─────────────────────────────────
 # Log in if we aren't already. We do this before setting up email
 # so we can call the API to get the correct noreply address.
 echo ""
@@ -179,7 +193,7 @@ else
   green "GitHub CLI already authenticated"
 fi
 
-# ── 6. Install VS Code ──────────────────────────────────────
+# ── 7. Install VS Code ──────────────────────────────────────
 # VS Code is the code editor we use in this course.
 echo ""
 echo "Checking VS Code..."
@@ -210,7 +224,7 @@ else
   fi
 fi
 
-# ── 7. VS Code extensions ────────────────────────────────────
+# ── 8. VS Code extensions ────────────────────────────────────
 # These extensions help with code quality and productivity.
 # If VS Code isn't installed, we skip this step.
 echo ""
@@ -252,7 +266,7 @@ else
   echo "  After installing, re-run this script to install extensions."
 fi
 
-# ── 8. Configure Git email privacy ───────────────────────────
+# ── 9. Configure Git email privacy ───────────────────────────
 # GitHub provides a private noreply email address for each account.
 # For accounts created after July 2017 (almost everyone) it has the
 # form:  ID+USERNAME@users.noreply.github.com
@@ -316,6 +330,7 @@ echo ""
 command -v git   &>/dev/null && green "Git"        || red "Git"
 command -v volta &>/dev/null && green "Volta"      || red "Volta"
 command -v node  &>/dev/null && green "Node.js"    || red "Node.js"
+command -v pnpm  &>/dev/null && green "pnpm"       || red "pnpm"
 command -v gh    &>/dev/null && green "GitHub CLI" || red "GitHub CLI"
 command -v code  &>/dev/null && green "VS Code"    || red "VS Code"
 echo ""
