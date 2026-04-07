@@ -267,6 +267,7 @@ if command -v code &>/dev/null; then
     "dbaeumer.vscode-eslint"
     "esbenp.prettier-vscode"
     "bradlc.vscode-tailwindcss"
+    "biomejs.biome"
     "GitHub.copilot"
     "GitHub.copilot-chat"
   )
