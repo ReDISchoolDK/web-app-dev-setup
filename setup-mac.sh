@@ -108,6 +108,26 @@ else
   export VOLTA_HOME="$HOME/.volta"
   export PATH="$VOLTA_HOME/bin:$PATH"
 
+  # The Volta installer should add PATH entries to the shell profile,
+  # but sometimes it fails silently. Verify and fix if needed.
+  SHELL_PROFILE=""
+  if [[ -n "${ZSH_VERSION:-}" ]] || [[ "$SHELL" == */zsh ]]; then
+    SHELL_PROFILE="$HOME/.zshrc"
+  elif [[ -f "$HOME/.bashrc" ]]; then
+    SHELL_PROFILE="$HOME/.bashrc"
+  elif [[ -f "$HOME/.bash_profile" ]]; then
+    SHELL_PROFILE="$HOME/.bash_profile"
+  fi
+
+  if [[ -n "$SHELL_PROFILE" ]] && ! grep -q 'VOLTA_HOME' "$SHELL_PROFILE" 2>/dev/null; then
+    yellow "Volta PATH not found in $SHELL_PROFILE — adding it now..."
+    echo '' >> "$SHELL_PROFILE"
+    echo '# Volta (Node.js version manager)' >> "$SHELL_PROFILE"
+    echo 'export VOLTA_HOME="$HOME/.volta"' >> "$SHELL_PROFILE"
+    echo 'export PATH="$VOLTA_HOME/bin:$PATH"' >> "$SHELL_PROFILE"
+    green "Volta PATH added to $SHELL_PROFILE"
+  fi
+
   green "Volta $(volta --version)"
   echo "  Note: restart your terminal after this script for Volta to work everywhere."
 fi
@@ -199,6 +219,10 @@ echo ""
 echo "Checking VS Code..."
 if command -v code &>/dev/null; then
   green "VS Code"
+elif [[ "$PLATFORM" == "mac" ]] && [[ -d "/Applications/Visual Studio Code.app" ]]; then
+  yellow "VS Code is installed but the 'code' CLI is not on PATH."
+  echo "  Open VS Code, press Cmd+Shift+P, type 'shell command', and"
+  echo "  select 'Install code command in PATH'."
 else
   yellow "Installing VS Code..."
 
