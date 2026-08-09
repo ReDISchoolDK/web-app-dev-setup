@@ -9,7 +9,7 @@
 #   4. pnpm — fast, disk-efficient package manager
 #   5. GitHub CLI (gh) — for working with GitHub from the terminal
 #   6. VS Code — code editor
-#   7. VS Code extensions — linting, formatting, Tailwind, Copilot
+#   7. VS Code extensions — Biome, Tailwind, Copilot
 #
 # It also configures Git so your personal email stays private.
 #
@@ -84,9 +84,25 @@ if (Test-Command "git") {
 # the team uses the same version of Node.
 Write-Host ""
 Write-Host "Checking Volta..." -ForegroundColor White
+# Volta only manages pnpm from version 2.0 onward. On 1.x the
+# "volta install pnpm" step below fails, so anyone still on an old
+# Volta gets upgraded through winget.
+$needsVolta = $true
 if (Test-Command "volta") {
-    Write-Ok "Volta $(volta --version)"
-} else {
+    $voltaMajor = ((volta --version) -split '\.')[0] -as [int]
+    if ($null -ne $voltaMajor -and $voltaMajor -ge 2) {
+        Write-Ok "Volta $(volta --version)"
+        $needsVolta = $false
+    } else {
+        Write-Info "Volta $(volta --version) is too old (we need 2.0 or newer) - upgrading..."
+        winget upgrade --id Volta.Volta -e --accept-source-agreements --accept-package-agreements
+        Update-Path
+        Write-Ok "Volta $(volta --version)"
+        $needsVolta = $false
+    }
+}
+
+if ($needsVolta) {
     Write-Info "Installing Volta..."
     winget install --id Volta.Volta -e --accept-source-agreements --accept-package-agreements
     Update-Path
@@ -206,16 +222,17 @@ Write-Host "Installing VS Code extensions..." -ForegroundColor White
 if (Test-Command "code") {
 
     # List of extensions for the course:
-    #   - ESLint: catches code errors
-    #   - Prettier: auto-formats your code
+    #   - Biome: catches code errors AND auto-formats your code
     #   - Tailwind CSS IntelliSense: autocomplete for Tailwind classes
     #   - GitHub Copilot: AI coding assistant
     #   - GitHub Copilot Chat: chat with Copilot
+    #
+    # Biome is the only formatter we install on purpose. Installing a
+    # second one (Prettier) alongside it makes format-on-save pick a
+    # winner at random, which produces diff noise nobody can explain.
     $extensions = @(
-        "dbaeumer.vscode-eslint"
-        "esbenp.prettier-vscode"
-        "bradlc.vscode-tailwindcss"
         "biomejs.biome"
+        "bradlc.vscode-tailwindcss"
         "GitHub.copilot"
         "GitHub.copilot-chat"
     )
@@ -223,7 +240,7 @@ if (Test-Command "code") {
     # Get the installed extensions as an array (one entry per line).
     # We split on newlines to get exact IDs for comparison — using
     # -match on the raw string would treat dots as regex wildcards
-    # and could produce false positives (e.g. "dbaeumerXvscode-eslint").
+    # and could produce false positives (e.g. "biomejsXbiome").
     [string[]]$installed = @(code --list-extensions 2>$null)
 
     foreach ($ext in $extensions) {
