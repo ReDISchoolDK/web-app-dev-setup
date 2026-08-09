@@ -7,7 +7,7 @@
 # This script installs the tools you need for the course:
 #   1. Git
 #   2. Volta — a Node.js version manager
-#   3. Node.js (LTS) — the JavaScript runtime
+#   3. Node.js 22 — the JavaScript runtime
 #   4. pnpm — fast, disk-efficient package manager
 #   5. GitHub CLI (gh) — for working with GitHub from the terminal
 #   6. VS Code — code editor
@@ -28,6 +28,14 @@
 
 # Stop the script if any command fails.
 set -euo pipefail
+
+# ── Versions we install ───────────────────────────────────────
+# Major versions only — Volta resolves the newest release inside
+# each major. The exact versions are pinned in the course project's
+# package.json, which Volta applies when you open that folder.
+# Bump these between semesters, deliberately.
+NODE_MAJOR="22"
+PNPM_MAJOR="11"
 
 # ── Helper functions for colored output ───────────────────────
 green()  { echo -e "\033[0;32m  ✓ $1\033[0m"; }
@@ -174,34 +182,55 @@ if [[ "$NEEDS_VOLTA" == true ]]; then
 fi
 
 # ── 3. Install Node.js ───────────────────────────────────────
-# Node.js is the JavaScript runtime. We install the LTS (Long-Term
-# Support) release via Volta so the version is stable and managed
-# automatically.
+# Node.js is the JavaScript runtime. We install a specific major
+# version (see NODE_MAJOR at the top) rather than @lts, because
+# "lts" moves: it points at 24 now, but pointed at 22 last year.
 echo ""
 # Volta places a "node" shim in PATH even before any version is
 # installed, so we check node --version instead of command -v.
+# We also check *which* major it is — a student may already have a
+# different one from an older install, and "is node present?" would
+# wrongly accept it.
 echo "Checking Node.js..."
+NODE_CURRENT=""
 if node --version &>/dev/null; then
+  NODE_CURRENT="$(node --version | sed 's/^v//' | cut -d. -f1)"
+fi
+
+if [[ "$NODE_CURRENT" == "$NODE_MAJOR" ]]; then
   green "Node.js $(node --version)"
 else
-  yellow "Installing Node.js LTS via Volta..."
-  volta install node@lts
+  if [[ -n "$NODE_CURRENT" ]]; then
+    yellow "Found Node.js $(node --version) — the course uses $NODE_MAJOR. Switching..."
+  else
+    yellow "Installing Node.js $NODE_MAJOR via Volta..."
+  fi
+  volta install "node@$NODE_MAJOR"
   green "Node.js $(node --version)"
 fi
 
 # ── 4. Install pnpm ─────────────────────────────────────────
 # pnpm is a fast, disk-efficient package manager. We install it
 # via Volta so the version stays in sync across the team.
-# Pinned to major 11 so a future pnpm 12 doesn't land mid-semester —
-# bump this deliberately, same as the Node/pnpm pins in the course
-# project's package.json.
+# Pinned to a major version (see PNPM_MAJOR at the top) so a future
+# pnpm 12 doesn't land mid-semester — bump it deliberately, same as
+# the Node/pnpm pins in the course project's package.json.
 echo ""
 echo "Checking pnpm..."
-if command -v pnpm &>/dev/null; then
+PNPM_CURRENT=""
+if pnpm --version &>/dev/null; then
+  PNPM_CURRENT="$(pnpm --version | cut -d. -f1)"
+fi
+
+if [[ "$PNPM_CURRENT" == "$PNPM_MAJOR" ]]; then
   green "pnpm $(pnpm --version)"
 else
-  yellow "Installing pnpm via Volta..."
-  volta install pnpm@11
+  if [[ -n "$PNPM_CURRENT" ]]; then
+    yellow "Found pnpm $(pnpm --version) — the course uses $PNPM_MAJOR. Switching..."
+  else
+    yellow "Installing pnpm $PNPM_MAJOR via Volta..."
+  fi
+  volta install "pnpm@$PNPM_MAJOR"
   green "pnpm $(pnpm --version)"
 fi
 
