@@ -42,6 +42,12 @@ function Update-Path {
                 [System.Environment]::GetEnvironmentVariable("Path", "User")
 }
 
+# Parses "volta --version" output as a [version], or returns $null if it
+# can't be parsed (e.g. unexpected output) instead of throwing.
+function Get-VoltaVersion {
+    try { return [version]((volta --version).Trim()) } catch { return $null }
+}
+
 $needsRerun = $false
 $githubUsername = $null
 
@@ -89,16 +95,25 @@ Write-Host "Checking Volta..." -ForegroundColor White
 # Volta gets upgraded through winget.
 $needsVolta = $true
 if (Test-Command "volta") {
-    $voltaMajor = ((volta --version) -split '\.')[0] -as [int]
-    if ($null -ne $voltaMajor -and $voltaMajor -ge 2) {
+    $voltaVersion = Get-VoltaVersion
+    if ($null -ne $voltaVersion -and $voltaVersion -ge [version]"2.0.0") {
         Write-Ok "Volta $(volta --version)"
         $needsVolta = $false
     } else {
         Write-Info "Volta $(volta --version) is too old (we need 2.0 or newer) - upgrading..."
         winget upgrade --id Volta.Volta -e --accept-source-agreements --accept-package-agreements
         Update-Path
-        Write-Ok "Volta $(volta --version)"
-        $needsVolta = $false
+
+        # Re-check rather than assuming the upgrade landed — "volta install
+        # pnpm" further down silently requires 2.0+.
+        $voltaVersion = Get-VoltaVersion
+        if ($null -ne $voltaVersion -and $voltaVersion -ge [version]"2.0.0") {
+            Write-Ok "Volta $(volta --version)"
+            $needsVolta = $false
+        } else {
+            Write-Info "Volta upgrade did not complete — not yet visible in this session."
+            $needsRerun = $true
+        }
     }
 }
 

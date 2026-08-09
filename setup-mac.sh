@@ -112,7 +112,10 @@ echo "Checking Volta..."
 # Volta gets upgraded by re-running the official installer.
 NEEDS_VOLTA=false
 if command -v volta &>/dev/null; then
-  VOLTA_MAJOR="$(volta --version 2>/dev/null | cut -d. -f1)"
+  # The `|| true` keeps a failing `volta --version` (e.g. a broken/corrupt
+  # install) from tripping `set -e` here — we want the version check below
+  # to handle it, not have the script abort silently.
+  VOLTA_MAJOR="$(volta --version 2>/dev/null | cut -d. -f1)" || true
   if ! [[ "$VOLTA_MAJOR" =~ ^[0-9]+$ ]] || [[ "$VOLTA_MAJOR" -lt 2 ]]; then
     yellow "Volta $(volta --version) is too old (we need 2.0 or newer) — upgrading..."
     NEEDS_VOLTA=true
@@ -127,7 +130,8 @@ fi
 if [[ "$NEEDS_VOLTA" == true ]]; then
   # This downloads and runs the official Volta installer.
   # It adds Volta to your shell profile (~/.bashrc, ~/.zshrc, etc.).
-  curl -fsSL https://get.volta.sh -o "$HOME/volta-install.sh" && bash "$HOME/volta-install.sh"
+  curl -fsSL https://get.volta.sh -o "$HOME/volta-install.sh"
+  bash "$HOME/volta-install.sh" || { rm -f "$HOME/volta-install.sh"; exit 1; }
   rm -f "$HOME/volta-install.sh"
 
   # Make Volta available in this script right now
@@ -153,6 +157,15 @@ if [[ "$NEEDS_VOLTA" == true ]]; then
     echo 'export VOLTA_HOME="$HOME/.volta"' >> "$SHELL_PROFILE"
     echo 'export PATH="$VOLTA_HOME/bin:$PATH"' >> "$SHELL_PROFILE"
     green "Volta PATH added to $SHELL_PROFILE"
+  fi
+
+  # Confirm the install/upgrade actually reached 2.0+ before moving on —
+  # "volta install pnpm" further down silently requires it.
+  VOLTA_MAJOR="$(volta --version 2>/dev/null | cut -d. -f1)" || true
+  if ! [[ "$VOLTA_MAJOR" =~ ^[0-9]+$ ]] || [[ "$VOLTA_MAJOR" -lt 2 ]]; then
+    red "Volta install did not reach version 2.0+."
+    echo "  Re-run this script, or install manually: https://docs.volta.sh"
+    exit 1
   fi
 
   green "Volta $(volta --version)"
