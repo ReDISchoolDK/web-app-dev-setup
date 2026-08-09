@@ -90,6 +90,41 @@ where you will make your first Pull Request.
 
 ---
 
+## Step 4: Get the exercises
+
+The exercises live in their own repository, separate from the practice
+repo above: [web-app-dev-exercises](https://github.com/ReDISchoolDK/web-app-dev-exercises).
+It's public, so you don't need to wait for an invite. You'll download a
+copy of it and open that copy in VS Code — you won't push or commit
+anything to it, so there's no way to get this wrong.
+
+1. Open VS Code.
+2. Open its built-in terminal: click **Terminal** in the top menu, then
+   **New Terminal**. A panel opens at the bottom of the window — that's
+   where you'll type the next commands.
+3. Decide where you want to keep your course files, e.g. your Desktop or
+   home folder, and move there. For your home folder, type:
+   ```
+   cd ~
+   ```
+   then press Enter.
+4. Download the exercises:
+   ```
+   git clone https://github.com/ReDISchoolDK/web-app-dev-exercises.git
+   ```
+   This creates a new folder called `web-app-dev-exercises` with a full
+   copy of the repository inside it.
+5. Open that folder in VS Code:
+   ```
+   code web-app-dev-exercises
+   ```
+
+If a command doesn't work, or any of this — "terminal", "clone" — is new
+to you, that's completely normal this early on. Ask a facilitator instead
+of guessing; we're happy to walk through it with you.
+
+---
+
 ## Manual setup
 
 Use this only if the script fails, or if you are on a Linux system it does
