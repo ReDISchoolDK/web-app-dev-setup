@@ -36,7 +36,7 @@ Open **Terminal** and run:
 <!-- MAINTAINERS: pin this URL to a commit hash each semester. See "Updating this repo" below. -->
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ReDISchoolDK/web-app-dev-setup/429f5bd9c2fd1527b3a8194204ab33c08902da94/setup-mac.sh -o ~/redi-setup.sh && bash ~/redi-setup.sh
+curl -fsSL https://raw.githubusercontent.com/ReDISchoolDK/web-app-dev-setup/98ecd5abea9425cc1b3ab7a0ca175328a1be8067/setup-mac.sh -o ~/redi-setup.sh && bash ~/redi-setup.sh
 ```
 
 This saves the script to your home folder as `redi-setup.sh` and then runs
@@ -50,7 +50,7 @@ Linux systems, use the manual steps at the bottom of this page.
 Open **PowerShell** and run:
 
 ```powershell
-irm https://raw.githubusercontent.com/ReDISchoolDK/web-app-dev-setup/429f5bd9c2fd1527b3a8194204ab33c08902da94/setup-windows.ps1 | iex
+irm https://raw.githubusercontent.com/ReDISchoolDK/web-app-dev-setup/98ecd5abea9425cc1b3ab7a0ca175328a1be8067/setup-windows.ps1 | iex
 ```
 
 Windows may need a second run. If the script says some tools are not
