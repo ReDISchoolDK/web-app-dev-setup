@@ -62,7 +62,7 @@ command again. It picks up where it stopped.
 - **Git** — tracks changes to your code
 - **VS Code** — the editor we use in class
 - **Volta** — keeps everyone on the same Node version
-- **Node.js and pnpm** — runs your code and installs packages
+- **Node.js 22 and pnpm 11** — runs your code and installs packages
 - **GitHub CLI** — logs you into GitHub from the terminal
 - **VS Code extensions** — Biome, Tailwind CSS IntelliSense
 - It also sets up Git to use your hidden email
@@ -147,7 +147,7 @@ newer** — older versions cannot install pnpm.
 Then open a new terminal and run:
 
 ```
-volta install node@lts
+volta install node@22
 volta install pnpm@11
 ```
 

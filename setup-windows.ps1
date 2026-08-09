@@ -49,6 +49,14 @@ function Get-VoltaVersion {
     try { return [version]((volta --version).Trim()) } catch { return $null }
 }
 
+# ── Versions we install ───────────────────────────────────────
+# Major versions only — Volta resolves the newest release inside
+# each major. The exact versions are pinned in the course project's
+# package.json, which Volta applies when you open that folder.
+# Bump these between semesters, deliberately.
+$NodeMajor = 22
+$PnpmMajor = 11
+
 $needsRerun = $false
 $githubUsername = $null
 
@@ -132,37 +140,84 @@ if ($needsVolta) {
 }
 
 # ── 3. Install Node.js ───────────────────────────────────────
-# Node.js is the JavaScript runtime. We install the LTS (Long-Term
-# Support) release via Volta so the version is stable and managed
-# automatically.
+# Node.js is the JavaScript runtime. We install a specific major
+# version via Volta so every student is on the same one. Checking
+# only "is node present?" is not enough — a student may already
+# have a different major from an older install.
 Write-Host ""
 Write-Host "Checking Node.js..." -ForegroundColor White
+
+# NOTE: PowerShell variable names are case-insensitive, so this must
+# NOT be called $nodeMajor — that is the same variable as $NodeMajor
+# above, and the comparison below would compare it to itself.
+$installedNodeMajor = $null
 if (Test-Command "node") {
+    $installedNodeMajor = (((node --version) -replace '^v', '') -split '\.')[0] -as [int]
+}
+
+if ($installedNodeMajor -eq $NodeMajor) {
     Write-Ok "Node.js $(node --version)"
 } elseif (Test-Command "volta") {
-    Write-Info "Installing Node.js LTS via Volta..."
-    volta install node@lts
-    Write-Ok "Node.js $(node --version)"
+    if ($null -ne $installedNodeMajor) {
+        Write-Info "Found Node.js $(node --version) — the course uses $NodeMajor. Switching..."
+    } else {
+        Write-Info "Installing Node.js $NodeMajor via Volta..."
+    }
+    volta install "node@$NodeMajor"
+
+    # Volta puts its shims in a folder that may not be on PATH yet
+    # in this session, so refresh before checking.
+    Update-Path
+    if (Test-Command "node") {
+        Write-Ok "Node.js $(node --version)"
+    } else {
+        Write-Info "Node.js installed — not yet visible in this session."
+        $needsRerun = $true
+    }
 } else {
     Write-Info "Skipping Node.js — needs Volta (will be set up on re-run)."
+    $needsRerun = $true
 }
 
 # ── 4. Install pnpm ─────────────────────────────────────────
 # pnpm is a fast, disk-efficient package manager. We install it
 # via Volta so the version stays in sync across the team.
-# Pinned to major 11 so a future pnpm 12 doesn't land mid-semester —
-# bump this deliberately, same as the Node/pnpm pins in the course
-# project's package.json.
+# Pinned to a major version (see $PnpmMajor at the top) so a future
+# pnpm 12 doesn't land mid-semester — bump it deliberately, same as
+# the Node/pnpm pins in the course project's package.json.
 Write-Host ""
 Write-Host "Checking pnpm..." -ForegroundColor White
+
+# Must not be called $pnpmMajor — see the note in the Node.js step.
+$installedPnpmMajor = $null
 if (Test-Command "pnpm") {
+    $installedPnpmMajor = ((pnpm --version) -split '\.')[0] -as [int]
+}
+
+if ($installedPnpmMajor -eq $PnpmMajor) {
     Write-Ok "pnpm $(pnpm --version)"
 } elseif (Test-Command "volta") {
-    Write-Info "Installing pnpm via Volta..."
-    volta install pnpm@11
-    Write-Ok "pnpm $(pnpm --version)"
+    if ($null -ne $installedPnpmMajor) {
+        Write-Info "Found pnpm $(pnpm --version) — the course uses $PnpmMajor. Switching..."
+    } else {
+        Write-Info "Installing pnpm $PnpmMajor via Volta..."
+    }
+    volta install "pnpm@$PnpmMajor"
+
+    # Same as Node: the shim is brand new, so refresh PATH before
+    # checking. Calling "pnpm --version" straight after the install
+    # is what killed this script with "'pnpm' is not recognized ..."
+    # before GitHub login or the extensions ever ran.
+    Update-Path
+    if (Test-Command "pnpm") {
+        Write-Ok "pnpm $(pnpm --version)"
+    } else {
+        Write-Info "pnpm installed — not yet visible in this session."
+        $needsRerun = $true
+    }
 } else {
     Write-Info "Skipping pnpm — needs Volta (will be set up on re-run)."
+    $needsRerun = $true
 }
 
 # ── 5. Install GitHub CLI ────────────────────────────────────
