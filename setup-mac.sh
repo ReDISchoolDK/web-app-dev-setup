@@ -11,14 +11,17 @@
 #   4. pnpm — fast, disk-efficient package manager
 #   5. GitHub CLI (gh) — for working with GitHub from the terminal
 #   6. VS Code — code editor
-#   7. VS Code extensions — linting, formatting, Tailwind, Copilot
+#   7. VS Code extensions — Biome, Tailwind, Copilot
 #
 # It also configures Git so your personal email stays private.
 #
 # Safe to run multiple times — it skips anything already installed.
 #
+# Linux support covers Debian-based distributions only (Ubuntu,
+# Debian, Mint, Pop!_OS) because every Linux step uses apt-get.
+#
 # Usage:
-#   curl -fsSL <raw-url>/setup-mac.sh -o /tmp/setup.sh && bash /tmp/setup.sh
+#   curl -fsSL <raw-url>/setup-mac.sh -o ~/redi-setup.sh && bash ~/redi-setup.sh
 #
 # ============================================================
 
@@ -44,6 +47,15 @@ if [[ "$OS" == "Darwin" ]]; then
   PLATFORM="mac"
 elif [[ "$OS" == "Linux" ]]; then
   PLATFORM="linux"
+  # Every Linux install step below uses apt-get. Check for it once,
+  # here, so distributions we don't support fail with a clear message
+  # instead of "command not found" halfway through the script.
+  if ! command -v apt-get &>/dev/null; then
+    red "This script supports Ubuntu/Debian-based Linux only."
+    echo "  Your system does not have apt-get."
+    echo "  Follow the 'Manual setup' section in the README instead."
+    exit 1
+  fi
 else
   red "Unsupported OS: $OS"
   echo "  On Windows, use setup-windows.ps1 instead."
@@ -95,13 +107,32 @@ fi
 # the team uses the same version of Node.
 echo ""
 echo "Checking Volta..."
+# Volta only manages pnpm from version 2.0 onward. On 1.x the
+# "volta install pnpm" step below fails, so anyone still on an old
+# Volta gets upgraded by re-running the official installer.
+NEEDS_VOLTA=false
 if command -v volta &>/dev/null; then
-  green "Volta $(volta --version)"
+  # The `|| true` keeps a failing `volta --version` (e.g. a broken/corrupt
+  # install) from tripping `set -e` here — we want the version check below
+  # to handle it, not have the script abort silently.
+  VOLTA_MAJOR="$(volta --version 2>/dev/null | cut -d. -f1)" || true
+  if ! [[ "$VOLTA_MAJOR" =~ ^[0-9]+$ ]] || [[ "$VOLTA_MAJOR" -lt 2 ]]; then
+    yellow "Volta $(volta --version) is too old (we need 2.0 or newer) — upgrading..."
+    NEEDS_VOLTA=true
+  else
+    green "Volta $(volta --version)"
+  fi
 else
   yellow "Installing Volta..."
+  NEEDS_VOLTA=true
+fi
+
+if [[ "$NEEDS_VOLTA" == true ]]; then
   # This downloads and runs the official Volta installer.
   # It adds Volta to your shell profile (~/.bashrc, ~/.zshrc, etc.).
-  curl -fsSL https://get.volta.sh -o /tmp/volta-install.sh && bash /tmp/volta-install.sh
+  curl -fsSL https://get.volta.sh -o "$HOME/volta-install.sh"
+  bash "$HOME/volta-install.sh" || { rm -f "$HOME/volta-install.sh"; exit 1; }
+  rm -f "$HOME/volta-install.sh"
 
   # Make Volta available in this script right now
   # (normally you'd need to restart your terminal).
@@ -126,6 +157,15 @@ else
     echo 'export VOLTA_HOME="$HOME/.volta"' >> "$SHELL_PROFILE"
     echo 'export PATH="$VOLTA_HOME/bin:$PATH"' >> "$SHELL_PROFILE"
     green "Volta PATH added to $SHELL_PROFILE"
+  fi
+
+  # Confirm the install/upgrade actually reached 2.0+ before moving on —
+  # "volta install pnpm" further down silently requires it.
+  VOLTA_MAJOR="$(volta --version 2>/dev/null | cut -d. -f1)" || true
+  if ! [[ "$VOLTA_MAJOR" =~ ^[0-9]+$ ]] || [[ "$VOLTA_MAJOR" -lt 2 ]]; then
+    red "Volta install did not reach version 2.0+."
+    echo "  Re-run this script, or install manually: https://docs.volta.sh"
+    exit 1
   fi
 
   green "Volta $(volta --version)"
@@ -258,16 +298,17 @@ if command -v code &>/dev/null; then
   echo "Installing VS Code extensions..."
 
   # List of extensions for the course:
-  #   - ESLint: catches code errors
-  #   - Prettier: auto-formats your code
+  #   - Biome: catches code errors AND auto-formats your code
   #   - Tailwind CSS IntelliSense: autocomplete for Tailwind classes
   #   - GitHub Copilot: AI coding assistant
   #   - GitHub Copilot Chat: chat with Copilot
+  #
+  # Biome is the only formatter we install on purpose. Installing a
+  # second one (Prettier) alongside it makes format-on-save pick a
+  # winner at random, which produces diff noise nobody can explain.
   EXTENSIONS=(
-    "dbaeumer.vscode-eslint"
-    "esbenp.prettier-vscode"
-    "bradlc.vscode-tailwindcss"
     "biomejs.biome"
+    "bradlc.vscode-tailwindcss"
     "GitHub.copilot"
     "GitHub.copilot-chat"
   )
@@ -277,7 +318,10 @@ if command -v code &>/dev/null; then
   INSTALLED=$(code --list-extensions 2>/dev/null || echo "")
 
   for ext in "${EXTENSIONS[@]}"; do
-    if echo "$INSTALLED" | grep -qi "^${ext}$"; then
+    # -F treats the ID as plain text, not a pattern. Without it the
+    # dots are regex wildcards, so "biomejs.biome" would also match
+    # something like "biomejsXbiome". -x anchors to the whole line.
+    if echo "$INSTALLED" | grep -qixF "$ext"; then
       green "$ext (already installed)"
     else
       yellow "Installing $ext..."

@@ -1,68 +1,95 @@
 # WAD Setup
 
-Welcome! Follow these steps to set up your development tools for the course.
+Welcome! This guide sets up the tools you need for the course.
+
+It takes about 10 minutes. Do the steps in order.
 
 ---
 
-## Step 1: Protect your email
+## Step 1: Hide your email
 
-Before anything else, go to your GitHub settings and turn on email privacy.
-This prevents your personal email from showing up in your commits.
+Every commit you make records an email address, and anyone can read it.
+GitHub can hide your real one for you. Turn that on first.
 
-1. Go to [GitHub → Settings → Emails](https://github.com/settings/emails)
-2. Check **Keep my email addresses private**
-3. Check **Block command line pushes that expose my email**
+1. Open [GitHub → Settings → Emails](https://github.com/settings/emails)
+2. Tick **Keep my email addresses private**
+3. Tick **Block command line pushes that expose my email**
 
-> With "Block command line pushes" enabled, GitHub will reject any push
-> that contains your real email. This is your safety net.
+The second box is your safety net. If your real email ever slips into a
+commit, GitHub refuses the push instead of publishing it.
 
-The setup script will automatically configure Git to use your GitHub noreply
-email address, so you don't need to copy anything manually.
+You do not need to copy any address by hand. The setup script does that
+part for you.
 
 ---
 
 ## Step 2: Run the setup script
 
-Open a terminal and paste the command for your operating system.
+Copy the command for your computer and paste it into a terminal.
+
+The script asks you a few questions while it runs, so stay at your desk.
 
 ### macOS / Linux
 
 Open **Terminal** and run:
 
+<!-- MAINTAINERS: pin this URL to a commit hash each semester. See "Updating this repo" below. -->
+
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/ReDISchoolDK/web-app-dev-setup/main/setup-mac.sh?$(date +%s)" -o /tmp/setup.sh && bash /tmp/setup.sh
+curl -fsSL https://raw.githubusercontent.com/ReDISchoolDK/web-app-dev-setup/be749e229c23338caa11ca507ea348fcd16a4c78/setup-mac.sh -o ~/redi-setup.sh && bash ~/redi-setup.sh
 ```
+
+This saves the script to your home folder as `redi-setup.sh` and then runs
+it. You can open that file and read it first if you want to see what it does.
+
+Linux note: the script works on Ubuntu, Debian, Mint and Pop!_OS. On other
+Linux systems, use the manual steps at the bottom of this page.
 
 ### Windows
 
 Open **PowerShell** and run:
 
 ```powershell
-irm "https://raw.githubusercontent.com/ReDISchoolDK/web-app-dev-setup/main/setup-windows.ps1?$(Get-Random)" | iex
+irm https://raw.githubusercontent.com/ReDISchoolDK/web-app-dev-setup/be749e229c23338caa11ca507ea348fcd16a4c78/setup-windows.ps1 | iex
 ```
 
-The script will install everything you need:
-- Git (if not already installed)
-- VS Code
-- Volta, Node.js (LTS), and pnpm
-- GitHub CLI (and log you in)
-- VS Code extensions (ESLint, Prettier, Tailwind, Copilot)
-- Configure Git so your email stays private
+Windows may need a second run. If the script says some tools are not
+visible yet, close the terminal, open a new one, and paste the same
+command again. It picks up where it stopped.
+
+### What it installs
+
+- **Git** — tracks changes to your code
+- **VS Code** — the editor we use in class
+- **Volta** — keeps everyone on the same Node version
+- **Node.js and pnpm** — runs your code and installs packages
+- **GitHub CLI** — logs you into GitHub from the terminal
+- **VS Code extensions** — Biome, Tailwind CSS IntelliSense, GitHub Copilot
+- It also sets up Git to use your hidden email
+
+**Biome** is our linter and formatter. It spots mistakes and formats your
+code when you save. Do not install Prettier as well. Two formatters fight
+over the same file, and your code ends up looking different from everyone
+else's.
+
+You do not have to pick a Node version. The course project tells Volta
+which one to use, and Volta switches to it the moment you open the folder.
 
 ---
 
-## Step 3: Post your GitHub username to Slack
+## Step 3: Send us your GitHub username
 
-At the end of the script you'll see your GitHub username displayed.
-Post it in the course Slack channel so we can add you to the private practice repo.
+The script prints your GitHub username when it finishes.
 
-Once you've been added, you'll receive an invite to the practice repo where you'll make your first Pull Request.
+Post it in the course Slack channel. We will add you to the practice repo,
+where you will make your first Pull Request.
 
 ---
 
-## Manual setup (if the script doesn't work)
+## Manual setup
 
-If the setup script fails or you're on an unsupported system, install everything manually using the links below.
+Use this only if the script fails, or if you are on a Linux system it does
+not support.
 
 ### 1. Git
 
@@ -72,26 +99,30 @@ If the setup script fails or you're on an unsupported system, install everything
 
 ### 2. VS Code
 
-Download from [code.visualstudio.com](https://code.visualstudio.com/)
+Download it from [code.visualstudio.com](https://code.visualstudio.com/)
 
-### 3. Volta, Node.js, and pnpm
+### 3. Volta, Node.js and pnpm
 
-1. Install Volta from [volta.sh](https://volta.sh/)
-2. Then open a terminal and run:
-   ```
-   volta install node@lts
-   volta install pnpm
-   ```
+Install Volta from [volta.sh](https://volta.sh/). You need **version 2.0 or
+newer** — older versions cannot install pnpm.
+
+Then open a new terminal and run:
+
+```
+volta install node@lts
+volta install pnpm
+```
 
 ### 4. GitHub CLI
 
-Install from [cli.github.com](https://cli.github.com/), then run:
+Install it from [cli.github.com](https://cli.github.com/), then run:
 
 ```
 gh auth login
 ```
 
-When prompted, pick these options:
+Pick these answers:
+
 - **Where do you use GitHub?** → GitHub.com
 - **Preferred protocol?** → HTTPS
 - **Authenticate Git with GitHub?** → Yes
@@ -99,26 +130,51 @@ When prompted, pick these options:
 
 ### 5. VS Code extensions
 
-Open VS Code and install these extensions (search by name in the Extensions panel, or click the links):
+Open VS Code and install these four:
 
-- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
-- [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+- [Biome](https://marketplace.visualstudio.com/items?itemName=biomejs.biome)
 - [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
 - [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)
 - [GitHub Copilot Chat](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat)
 
-### 6. Configure Git email privacy
+### 6. Hide your email in Git
 
-After logging into GitHub CLI, run these commands in your terminal (replace `Your Name` with your actual name):
+Set your name:
 
 ```
 git config --global user.name "Your Name"
 ```
 
-To find your private email address, go to [github.com/settings/emails](https://github.com/settings/emails). Under **Primary email address** you'll see an address like `123456+username@users.noreply.github.com`. Copy it, then run:
+Now find your hidden email. Go to
+[github.com/settings/emails](https://github.com/settings/emails) and look
+under **Primary email address**. You will see something like
+`123456+username@users.noreply.github.com`. Copy it and run:
 
 ```
-git config --global user.email "YOUR_NOREPLY_EMAIL"
+git config --global user.email "PASTE_YOUR_ADDRESS_HERE"
 ```
 
-Make sure you also check **Keep my email addresses private** and **Block command line pushes that expose my email** on that same page.
+The number at the front matters. An address without it gets rejected once
+you tick **Block command line pushes**.
+
+---
+
+## Updating this repo (instructors)
+
+The install commands above point at a fixed commit hash, not at `main`.
+That way every student runs the exact same script, no matter which week
+they start. Changing the script does not change what past students ran.
+
+After you edit a script:
+
+1. Commit the change and copy the new commit hash.
+2. Replace the hash in both commands above.
+3. Commit that as a separate change.
+
+**Use a merge commit, not a squash merge.** Squashing replaces the commit
+you pinned to with a brand new one, and the hash in the commands above
+stops matching anything in this branch's history. If you do squash, redo
+steps 1–3 against the squashed commit.
+
+Bump the pinned Node and pnpm versions in the course project's
+`package.json` between semesters, as a deliberate commit.

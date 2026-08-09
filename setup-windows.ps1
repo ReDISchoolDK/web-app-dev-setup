@@ -9,7 +9,7 @@
 #   4. pnpm — fast, disk-efficient package manager
 #   5. GitHub CLI (gh) — for working with GitHub from the terminal
 #   6. VS Code — code editor
-#   7. VS Code extensions — linting, formatting, Tailwind, Copilot
+#   7. VS Code extensions — Biome, Tailwind, Copilot
 #
 # It also configures Git so your personal email stays private.
 #
@@ -40,6 +40,12 @@ function Test-Command { param($cmd) $null -ne (Get-Command $cmd -ErrorAction Sil
 function Update-Path {
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
                 [System.Environment]::GetEnvironmentVariable("Path", "User")
+}
+
+# Parses "volta --version" output as a [version], or returns $null if it
+# can't be parsed (e.g. unexpected output) instead of throwing.
+function Get-VoltaVersion {
+    try { return [version]((volta --version).Trim()) } catch { return $null }
 }
 
 $needsRerun = $false
@@ -84,9 +90,34 @@ if (Test-Command "git") {
 # the team uses the same version of Node.
 Write-Host ""
 Write-Host "Checking Volta..." -ForegroundColor White
+# Volta only manages pnpm from version 2.0 onward. On 1.x the
+# "volta install pnpm" step below fails, so anyone still on an old
+# Volta gets upgraded through winget.
+$needsVolta = $true
 if (Test-Command "volta") {
-    Write-Ok "Volta $(volta --version)"
-} else {
+    $voltaVersion = Get-VoltaVersion
+    if ($null -ne $voltaVersion -and $voltaVersion -ge [version]"2.0.0") {
+        Write-Ok "Volta $(volta --version)"
+        $needsVolta = $false
+    } else {
+        Write-Info "Volta $(volta --version) is too old (we need 2.0 or newer) - upgrading..."
+        winget upgrade --id Volta.Volta -e --accept-source-agreements --accept-package-agreements
+        Update-Path
+
+        # Re-check rather than assuming the upgrade landed — "volta install
+        # pnpm" further down silently requires 2.0+.
+        $voltaVersion = Get-VoltaVersion
+        if ($null -ne $voltaVersion -and $voltaVersion -ge [version]"2.0.0") {
+            Write-Ok "Volta $(volta --version)"
+            $needsVolta = $false
+        } else {
+            Write-Info "Volta upgrade did not complete — not yet visible in this session."
+            $needsRerun = $true
+        }
+    }
+}
+
+if ($needsVolta) {
     Write-Info "Installing Volta..."
     winget install --id Volta.Volta -e --accept-source-agreements --accept-package-agreements
     Update-Path
@@ -206,16 +237,17 @@ Write-Host "Installing VS Code extensions..." -ForegroundColor White
 if (Test-Command "code") {
 
     # List of extensions for the course:
-    #   - ESLint: catches code errors
-    #   - Prettier: auto-formats your code
+    #   - Biome: catches code errors AND auto-formats your code
     #   - Tailwind CSS IntelliSense: autocomplete for Tailwind classes
     #   - GitHub Copilot: AI coding assistant
     #   - GitHub Copilot Chat: chat with Copilot
+    #
+    # Biome is the only formatter we install on purpose. Installing a
+    # second one (Prettier) alongside it makes format-on-save pick a
+    # winner at random, which produces diff noise nobody can explain.
     $extensions = @(
-        "dbaeumer.vscode-eslint"
-        "esbenp.prettier-vscode"
-        "bradlc.vscode-tailwindcss"
         "biomejs.biome"
+        "bradlc.vscode-tailwindcss"
         "GitHub.copilot"
         "GitHub.copilot-chat"
     )
@@ -223,7 +255,7 @@ if (Test-Command "code") {
     # Get the installed extensions as an array (one entry per line).
     # We split on newlines to get exact IDs for comparison — using
     # -match on the raw string would treat dots as regex wildcards
-    # and could produce false positives (e.g. "dbaeumerXvscode-eslint").
+    # and could produce false positives (e.g. "biomejsXbiome").
     [string[]]$installed = @(code --list-extensions 2>$null)
 
     foreach ($ext in $extensions) {
