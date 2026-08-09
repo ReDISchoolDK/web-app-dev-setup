@@ -408,7 +408,7 @@ if ($needsRerun) {
     Write-Host "  2. Post your GitHub username in the course Slack channel:"
     Write-Host "     Your username is:  $githubUsername"
     Write-Host ""
-    Write-Host "  Once we add you, you'll get an invite to make"
-    Write-Host "  your first Pull Request!"
+    Write-Host "  Nice work — your setup is done! Head back to the README"
+    Write-Host "  and continue with Step 4 to grab the course exercises."
     Write-Host ""
 }

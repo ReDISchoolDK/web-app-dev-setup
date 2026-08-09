@@ -85,8 +85,7 @@ which one to use, and Volta switches to it the moment you open the folder.
 
 The script prints your GitHub username when it finishes.
 
-Post it in the course Slack channel. We will add you to the practice repo,
-where you will make your first Pull Request.
+Post it in the course Slack channel, then move on to Step 4 below.
 
 ---
 
