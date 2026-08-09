@@ -301,7 +301,12 @@ if command -v code &>/dev/null; then
   #   - Biome: catches code errors AND auto-formats your code
   #   - Tailwind CSS IntelliSense: autocomplete for Tailwind classes
   #   - GitHub Copilot: AI coding assistant
-  #   - GitHub Copilot Chat: chat with Copilot
+  #
+  # Copilot Chat isn't listed — recent VS Code ships it as a built-in
+  # extension, so installing it separately isn't needed (and installing
+  # GitHub.copilot itself can still fail to pull it in as a dependency if
+  # the marketplace version is older than the bundled one; that failure
+  # is handled below instead of aborting the whole script).
   #
   # Biome is the only formatter we install on purpose. Installing a
   # second one (Prettier) alongside it makes format-on-save pick a
@@ -310,7 +315,6 @@ if command -v code &>/dev/null; then
     "biomejs.biome"
     "bradlc.vscode-tailwindcss"
     "GitHub.copilot"
-    "GitHub.copilot-chat"
   )
 
   # Get the list of already-installed extensions once,
@@ -325,8 +329,14 @@ if command -v code &>/dev/null; then
       green "$ext (already installed)"
     else
       yellow "Installing $ext..."
-      code --install-extension "$ext" --force &>/dev/null
-      green "$ext"
+      # A single extension failing (e.g. newer VS Code ships Copilot Chat
+      # as a built-in that the marketplace version can't "downgrade")
+      # shouldn't take down the rest of setup under set -e.
+      if code --install-extension "$ext" --force &>/dev/null; then
+        green "$ext"
+      else
+        red "$ext failed to install — install it manually from the Extensions panel."
+      fi
     fi
   done
 else
