@@ -139,6 +139,18 @@ not support.
 
 Download it from [code.visualstudio.com](https://code.visualstudio.com/)
 
+**On macOS,** drag it into your Applications folder, then turn on the `code`
+terminal command — the setup script needs it to install extensions:
+
+1. Open VS Code
+2. Press `Cmd+Shift+P`
+3. Type `shell command`
+4. Select **Shell Command: Install 'code' command in PATH**
+5. Open a new terminal
+
+See [`command not found: code`](#command-not-found-code) below if you get
+stuck on this.
+
 ### 3. Volta, Node.js and pnpm
 
 Install Volta from [volta.sh](https://volta.sh/). You need **version 2.0 or
@@ -195,6 +207,49 @@ git config --global user.email "PASTE_YOUR_ADDRESS_HERE"
 
 The number at the front matters. An address without it gets rejected once
 you tick **Block command line pushes**.
+
+---
+
+## Troubleshooting
+
+### `command not found: code`
+
+You will most likely see this on a Mac, and it does not mean anything is
+broken. The setup script stops with this message on purpose, because it
+needs the `code` command to install your VS Code extensions.
+
+**Why it happens:** on macOS, VS Code is just an app you drag into your
+Applications folder. There is no installer, so nothing ever gets the
+chance to add the `code` command to your terminal. On Windows the
+installer ticks a box for you, and on Linux the package does it
+automatically — Mac is the odd one out.
+
+**The fix:**
+
+1. Open VS Code
+2. Press `Cmd+Shift+P`
+3. Type `shell command`
+4. Select **Shell Command: Install 'code' command in PATH**
+5. Close your terminal and open a new one
+6. Run the setup script again — it picks up where it left off and skips
+   everything that is already installed
+
+**Move VS Code to your Applications folder first.** If you run it straight
+out of Downloads, macOS launches it from a temporary location, and this
+setting quietly undoes itself the next time you open the app.
+
+If step 4 does not appear or does not stick, add it by hand instead. Open
+a terminal and run:
+
+```
+echo 'export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"' >> ~/.zprofile
+```
+
+Then open a new terminal and check it worked:
+
+```
+code --version
+```
 
 ---
 

@@ -290,12 +290,38 @@ fi
 # VS Code is the code editor we use in this course.
 echo ""
 echo "Checking VS Code..."
+
+# On macOS, VS Code ships as a drag-and-drop .app bundle — there is no
+# installer step that can put the 'code' command on your PATH, so a fresh
+# Mac never has it. (Windows has an installer checkbox and Linux .deb
+# packages symlink it, which is why this only bites Mac users.)
+#
+# We stop the script here rather than warning and continuing: without
+# 'code' we cannot install the extensions, and a warning scrolls past
+# unnoticed. Adding it to PATH is two clicks, and this script is safe
+# to re-run — it skips everything already installed.
+explain_missing_code_cli() {
+  red "VS Code is installed, but the 'code' command is not available."
+  echo ""
+  echo "  On macOS this has to be turned on once, by hand:"
+  echo ""
+  echo "    1. Open VS Code"
+  echo "    2. Press Cmd+Shift+P"
+  echo "    3. Type: shell command"
+  echo "    4. Select: Shell Command: Install 'code' command in PATH"
+  echo "    5. Close this terminal and open a new one"
+  echo "    6. Run this setup script again"
+  echo ""
+  echo "  Tip: make sure VS Code is in your Applications folder first."
+  echo "  Running it from Downloads makes this step undo itself."
+  echo ""
+}
+
 if command -v code &>/dev/null; then
   green "VS Code"
 elif [[ "$PLATFORM" == "mac" ]] && [[ -d "/Applications/Visual Studio Code.app" ]]; then
-  yellow "VS Code is installed but the 'code' CLI is not on PATH."
-  echo "  Open VS Code, press Cmd+Shift+P, type 'shell command', and"
-  echo "  select 'Install code command in PATH'."
+  explain_missing_code_cli
+  exit 1
 else
   yellow "Installing VS Code..."
 
@@ -314,10 +340,19 @@ else
 
   if command -v code &>/dev/null; then
     green "VS Code"
+  elif [[ "$PLATFORM" == "mac" ]] && [[ -d "/Applications/Visual Studio Code.app" ]]; then
+    # Expected on macOS: the Homebrew cask installs the app but cannot
+    # add the CLI to PATH. The install worked — say so, don't call it
+    # a failure, then explain the one manual step that remains.
+    green "VS Code installed"
+    echo ""
+    explain_missing_code_cli
+    exit 1
   else
     red "VS Code installation failed."
     echo "  Download it manually from https://code.visualstudio.com/"
     echo "  After installing, re-run this script to install extensions."
+    exit 1
   fi
 fi
 
@@ -375,6 +410,7 @@ else
   red "VS Code not found."
   echo "  Download it from https://code.visualstudio.com/"
   echo "  After installing, re-run this script to install extensions."
+  exit 1
 fi
 
 # ── 9. Configure Git email privacy ───────────────────────────
