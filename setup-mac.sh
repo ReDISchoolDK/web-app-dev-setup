@@ -11,7 +11,8 @@
 #   4. pnpm — fast, disk-efficient package manager
 #   5. GitHub CLI (gh) — for working with GitHub from the terminal
 #   6. VS Code — code editor
-#   7. VS Code extensions — Biome, Tailwind, Copilot
+#   7. VS Code extensions — Biome, Tailwind CSS IntelliSense
+#      (Copilot ships built into VS Code — nothing to install)
 #
 # It also configures Git so your personal email stays private.
 #
@@ -191,13 +192,16 @@ fi
 # ── 4. Install pnpm ─────────────────────────────────────────
 # pnpm is a fast, disk-efficient package manager. We install it
 # via Volta so the version stays in sync across the team.
+# Pinned to major 11 so a future pnpm 12 doesn't land mid-semester —
+# bump this deliberately, same as the Node/pnpm pins in the course
+# project's package.json.
 echo ""
 echo "Checking pnpm..."
 if command -v pnpm &>/dev/null; then
   green "pnpm $(pnpm --version)"
 else
   yellow "Installing pnpm via Volta..."
-  volta install pnpm
+  volta install pnpm@11
   green "pnpm $(pnpm --version)"
 fi
 
@@ -300,13 +304,13 @@ if command -v code &>/dev/null; then
   # List of extensions for the course:
   #   - Biome: catches code errors AND auto-formats your code
   #   - Tailwind CSS IntelliSense: autocomplete for Tailwind classes
-  #   - GitHub Copilot: AI coding assistant
   #
-  # Copilot Chat isn't listed — recent VS Code ships it as a built-in
-  # extension, so installing it separately isn't needed (and installing
-  # GitHub.copilot itself can still fail to pull it in as a dependency if
-  # the marketplace version is older than the bundled one; that failure
-  # is handled below instead of aborting the whole script).
+  # GitHub Copilot isn't listed — since VS Code 1.116, Copilot Chat ships
+  # as a built-in extension that already covers chat, inline suggestions,
+  # and agents for anyone starting fresh, which is every student here.
+  # Installing the standalone GitHub.copilot extension on top of that is
+  # both unnecessary and fails outright (it bundles its own copilot-chat,
+  # which conflicts with the newer one already built in).
   #
   # Biome is the only formatter we install on purpose. Installing a
   # second one (Prettier) alongside it makes format-on-save pick a
@@ -314,7 +318,6 @@ if command -v code &>/dev/null; then
   EXTENSIONS=(
     "biomejs.biome"
     "bradlc.vscode-tailwindcss"
-    "GitHub.copilot"
   )
 
   # Get the list of already-installed extensions once,

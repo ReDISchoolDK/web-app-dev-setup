@@ -64,13 +64,17 @@ command again. It picks up where it stopped.
 - **Volta** — keeps everyone on the same Node version
 - **Node.js and pnpm** — runs your code and installs packages
 - **GitHub CLI** — logs you into GitHub from the terminal
-- **VS Code extensions** — Biome, Tailwind CSS IntelliSense, GitHub Copilot
+- **VS Code extensions** — Biome, Tailwind CSS IntelliSense
 - It also sets up Git to use your hidden email
 
 **Biome** is our linter and formatter. It spots mistakes and formats your
 code when you save. Do not install Prettier as well. Two formatters fight
 over the same file, and your code ends up looking different from everyone
 else's.
+
+**GitHub Copilot** ships built into VS Code now — chat, inline
+suggestions, and agents all work out of the box. There is nothing to
+install.
 
 You do not have to pick a Node version. The course project tells Volta
 which one to use, and Volta switches to it the moment you open the folder.
@@ -110,7 +114,7 @@ Then open a new terminal and run:
 
 ```
 volta install node@lts
-volta install pnpm
+volta install pnpm@11
 ```
 
 ### 4. GitHub CLI
@@ -130,14 +134,13 @@ Pick these answers:
 
 ### 5. VS Code extensions
 
-Open VS Code and install these three:
+Open VS Code and install these two:
 
 - [Biome](https://marketplace.visualstudio.com/items?itemName=biomejs.biome)
 - [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
-- [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)
 
-Copilot Chat isn't listed separately — recent VS Code versions ship it
-built in.
+GitHub Copilot isn't listed — it ships built into VS Code now, chat and
+inline suggestions included. There is nothing to install.
 
 ### 6. Hide your email in Git
 
